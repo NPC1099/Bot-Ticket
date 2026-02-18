@@ -177,7 +177,10 @@ client.on('interactionCreate', async interaction => {
 
       await channel.send({ embeds: [ticketEmbed], components: [closeRow] });
 
-      await interaction.reply({ content: `✅ Seu ticket foi criado: ${channel}`, ephemeral: true });
+      await interaction.reply({ 
+  content: `✅ Seu ticket foi criado: ${channel}`, 
+  flags: 64  // 64 = EPHEMERAL
+});
     }
 
   }
