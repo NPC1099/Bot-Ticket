@@ -10,8 +10,7 @@ const {
   SlashCommandBuilder,
   REST,
   Routes,
-  EmbedBuilder,
-  StringSelectMenuBuilder
+  EmbedBuilder
 } = require('discord.js');
 require('dotenv').config();
 
@@ -41,6 +40,7 @@ const rest = new REST({ version: '10' }).setToken(process.env.TOKEN);
   }
 })();
 
+// Bot ready
 client.once('ready', () => {
   console.log(`✅ Bot online como ${client.user.tag}`);
 });
@@ -49,7 +49,6 @@ client.on('interactionCreate', async interaction => {
   // Slash command
   if (interaction.isChatInputCommand()) {
     if (interaction.commandName === 'ticket') {
-
       // Embed painel principal
       const embed = new EmbedBuilder()
         .setTitle('🎫 Painel de Tickets')
@@ -57,7 +56,7 @@ client.on('interactionCreate', async interaction => {
         .setColor('#5865F2')
         .setFooter({ text: 'Equipe de Suporte' });
 
-      // Botões para os tipos de ticket
+      // Botões de ticket
       const row = new ActionRowBuilder().addComponents(
         new ButtonBuilder()
           .setCustomId('ticket_middle')
@@ -81,13 +80,12 @@ client.on('interactionCreate', async interaction => {
           .setStyle(ButtonStyle.Secondary)
       );
 
-      await interaction.reply({ embeds: [embed], components: [row] });
+      await interaction.reply({ embeds: [embed], components: [row], flags: 64 });
     }
   }
 
   // Botões
   if (interaction.isButton()) {
-
     let nomeTicket;
     let corTicket = '#2f3136';
     let tipo = '';
@@ -124,8 +122,7 @@ client.on('interactionCreate', async interaction => {
     }
 
     if(interaction.customId !== 'fechar_ticket') {
-      // Aqui você pode definir quem pode fechar o ticket
-      // Exemplo: apenas usuários com permissão "ManageChannels"
+      // Permissões do canal
       const closePerms = [
         {
           id: interaction.guild.id,
@@ -141,7 +138,7 @@ client.on('interactionCreate', async interaction => {
         }
       ];
 
-      // Membros adicionais que podem fechar o ticket (ex: cargo de suporte)
+      // Cargo que pode fechar ticket
       const suporteRole = interaction.guild.roles.cache.find(r => r.name === 'Suporte');
       if(suporteRole) {
         closePerms.push({
@@ -154,7 +151,7 @@ client.on('interactionCreate', async interaction => {
         });
       }
 
-      // Criação do canal
+      // Criar canal
       const channel = await interaction.guild.channels.create({
         name: nomeTicket,
         type: ChannelType.GuildText,
@@ -167,7 +164,7 @@ client.on('interactionCreate', async interaction => {
         .setDescription(`${interaction.user}, nossa equipe irá te atender em breve!`)
         .setColor(corTicket);
 
-      // Botão de fechar ticket
+      // Botão fechar ticket
       const closeRow = new ActionRowBuilder().addComponents(
         new ButtonBuilder()
           .setCustomId('fechar_ticket')
@@ -177,14 +174,10 @@ client.on('interactionCreate', async interaction => {
 
       await channel.send({ embeds: [ticketEmbed], components: [closeRow] });
 
-      await interaction.reply({ 
-  content: `✅ Seu ticket foi criado: ${channel}`, 
-  flags: 64  // 64 = EPHEMERAL
-});
+      // Mensagem ephemera usando flags
+      await interaction.reply({ content: `✅ Seu ticket foi criado: ${channel}`, flags: 64 });
     }
-
   }
-
 });
 
 client.login(process.env.TOKEN);
