@@ -28,6 +28,7 @@ const commands = [
 ];
 
 const rest = new REST({ version: '10' }).setToken(process.env.TOKEN);
+
 (async () => {
   try {
     await rest.put(
@@ -45,10 +46,13 @@ client.once('ready', () => {
   console.log(`✅ Bot online como ${client.user.tag}`);
 });
 
+// Interações
 client.on('interactionCreate', async interaction => {
-  // Slash command
+
+  // Slash command /ticket
   if (interaction.isChatInputCommand()) {
     if (interaction.commandName === 'ticket') {
+
       // Embed painel principal
       const embed = new EmbedBuilder()
         .setTitle('🎫 Painel de Tickets')
@@ -80,12 +84,14 @@ client.on('interactionCreate', async interaction => {
           .setStyle(ButtonStyle.Secondary)
       );
 
+      // Resposta imediata para evitar "aplicativo não respondeu"
       await interaction.reply({ embeds: [embed], components: [row], flags: 64 });
     }
   }
 
   // Botões
   if (interaction.isButton()) {
+
     let nomeTicket;
     let corTicket = '#2f3136';
     let tipo = '';
@@ -122,6 +128,7 @@ client.on('interactionCreate', async interaction => {
     }
 
     if(interaction.customId !== 'fechar_ticket') {
+
       // Permissões do canal
       const closePerms = [
         {
@@ -151,7 +158,10 @@ client.on('interactionCreate', async interaction => {
         });
       }
 
-      // Criar canal
+      // Resposta imediata para interação do botão
+      await interaction.deferReply({ ephemeral: true });
+
+      // Criar canal do ticket
       const channel = await interaction.guild.channels.create({
         name: nomeTicket,
         type: ChannelType.GuildText,
@@ -164,7 +174,7 @@ client.on('interactionCreate', async interaction => {
         .setDescription(`${interaction.user}, nossa equipe irá te atender em breve!`)
         .setColor(corTicket);
 
-      // Botão fechar ticket
+      // Botão de fechar ticket
       const closeRow = new ActionRowBuilder().addComponents(
         new ButtonBuilder()
           .setCustomId('fechar_ticket')
@@ -174,10 +184,11 @@ client.on('interactionCreate', async interaction => {
 
       await channel.send({ embeds: [ticketEmbed], components: [closeRow] });
 
-      // Mensagem ephemera usando flags
-      await interaction.reply({ content: `✅ Seu ticket foi criado: ${channel}`, flags: 64 });
+      // Mensagem ephemera confirmando
+      await interaction.editReply({ content: `✅ Seu ticket foi criado: ${channel}` });
     }
   }
+
 });
 
 client.login(process.env.TOKEN);
